@@ -1,60 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { Layout } from "./components";
+import styled from "styled-components";
 
-function App() {
-  const [messages, setMessages] = useState<string[]>([]);
-  const [input, setInput] = useState("");
-  const [ws, setWs] = useState<WebSocket | null>(null);
-  const [username, setUsername] = useState("");
+const Container = styled.div`
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-columns: 100%;
+`;
 
-  useEffect(() => {
-    // Use current hostname of the page (works for localhost AND LAN IPs)
-  const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-  const wsUrl = `${wsProtocol}://${window.location.hostname}:8000/ws`;
+const Main = styled.main`
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1600px;
+  min height: 100vh;
+  padding: 0;
+`;
 
-  const socket = new WebSocket(wsUrl);
-
-  socket.onmessage = (event) => {
-    setMessages((prev) => [...prev, event.data]);
-  };
-
-  setWs(socket);
-
-  return () => socket.close();
-  }, []);
-
-  const sendMessage = () => {
-    if (ws && input.trim() !== "") {
-      ws.send(`${username || "Anonymous"}: ${input}`);
-      setInput("");
-    }
-  };
-
-  if (!username) {
-    return (
-      <div style={{ padding: "20px" }}>
-        <h2>Enter your username</h2>
-        <input value={input} onChange={(e) => setInput(e.target.value)} />
-        <button onClick={() => setUsername(input)}>Join</button>
-      </div>
-    );
-  }
-
+const App: React.FC = () => {
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Chat as {username}</h2>
-      <div style={{ border: "1px solid black", height: "200px", overflowY: "scroll", padding: "10px" }}>
-        {messages.map((msg, i) => (
-          <div key={i}>{msg}</div>
-        ))}
-      </div>
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-      />
-      <button onClick={sendMessage}>Send</button>
-    </div>
+    <Container>
+      <Main>
+
+        <Layout />
+      </Main>
+    </Container>
   );
 }
 
