@@ -70,6 +70,7 @@ const Fields = styled.div`
         border-radius: 5px;
         background: none;
         color: inherit;
+        padding-left: 15px;
     }
 
     button {
@@ -103,7 +104,7 @@ const Chat: React.FC<ChatProps> = ({ username }) => {
 
     useEffect(() => {
         const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-        const wsUrl = `${wsProtocol}://${window.location.hostname}:8000/ws`;
+        const wsUrl = `${wsProtocol}://${window.location.hostname}:8000/ws/${username}`;
 
         const socket = new WebSocket(wsUrl);
 
@@ -114,11 +115,11 @@ const Chat: React.FC<ChatProps> = ({ username }) => {
         setWs(socket);
 
         return () => socket.close();
-    }, []);
+    }, [username]);
 
     const sendMessage = () => {
         if (ws && input.trim() !== "") {
-            ws.send(`${username}: ${input}`);
+            ws.send(input);
             setInput("");
         }
     };

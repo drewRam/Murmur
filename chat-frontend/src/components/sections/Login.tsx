@@ -83,8 +83,15 @@ const StyledLogin = styled.section`
         color: rgba(255, 77, 77, 0.8);
         font-size: 0.85rem;
         margin-top: 10px;
+        min-height: 1.2em;
     }
 `;
+
+const ToTitleCase = (str: string) => {
+    return str.replace(/\w\S*/g, (txt) => {
+        return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase();
+    });
+}
 
 interface LoginProps {
     onLogin: (username: string) => void;
@@ -94,12 +101,33 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const [input, setInput] = useState<string>("");
     const [placeholder, setPlaceholder] = useState<string>("Username");
     const [triedSubmit, setTriedSubmit] = useState<boolean>(false);
+    const [uniqueUsername, setUniqueUsername] = useState<boolean>(true);
     const isValidLength = input.trim().length >= 3 && input.trim().length <= 15;
 
-    const handleLogin = () => {
+    const handleLogin = async() => {
         setTriedSubmit(true);
-        if (isValidLength) {
-            onLogin(input);
+        if (!isValidLength) return;
+
+        const name = ToTitleCase(input);
+        try {
+            const res = await fetch("http://localhost:8000/check-username", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: name }),
+            });
+            
+            if (!res.ok) {
+                const data = await res.json();
+                console.log(data);
+                setUniqueUsername(false);
+                // alert(data.detail || "Username not available");
+                return;
+            }
+            
+            setUniqueUsername(true);
+            onLogin(name);
+        } catch (err) {
+            console.error("Error checking username", err);
         }
     };
 
@@ -115,7 +143,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 value={input}
                 minLength={3}
                 maxLength={10}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                    setInput(e.target.value)
+                    setUniqueUsername(true)
+                }}
                 onFocus={() => setPlaceholder("")}
                 onBlur={() => {
                     if (input.trim() === "") setPlaceholder("Username");
@@ -126,7 +157,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 Enter
             </button>
             <div className="warning">
-                {(!isValidLength && triedSubmit) ? "Username must be 3-15 characters long" : "\u00A0"}
+                {triedSubmit && (
+                    !isValidLength
+                        ? "Username must be 3-15 characters long"
+                        : !uniqueUsername
+                        ? "Username is already taken."
+                        : ""
+                )}
             </div>
         </StyledLogin>
     );

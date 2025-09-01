@@ -21,7 +21,6 @@ const App: React.FC = () => {
   return (
     <Container>
       <Main>
-
         <Layout />
       </Main>
     </Container>
