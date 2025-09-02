@@ -1,6 +1,8 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Dict, Set
+import json
 
 app = FastAPI()
 
@@ -13,8 +15,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Connections and usernames
-active_connections: dict[WebSocket, str] = {}
+# chat_rooms: room_id -> set of WebSockets
+chat_rooms: Dict[str, Set[WebSocket]] = {}
+
+# usernames per connection
+usernames: Dict[WebSocket, str] = {}
 
 class UsernameRequest(BaseModel):
     username: str
@@ -22,30 +27,34 @@ class UsernameRequest(BaseModel):
 @app.post("/check-username")
 async def check_username(req: UsernameRequest):
     username = req.username.strip()
-    if username in active_connections.values():
+    if username in usernames.values():
         raise HTTPException(status_code=400, detail="Username already taken")
     return {"available": True}
 
-async def broadcast(message: str):
-    for conn in active_connections.keys():
-        await conn.send_text(message)
+async def broadcast(room_id: str, sender_ws: WebSocket, username: str, message: str):
+    if room_id in chat_rooms:
+        payload = json.dumps({"username": username, "message": message})
+        for conn in chat_rooms[room_id]:
+            # Optional: skip sender if you want sender to manage local UI
+            # if conn == sender_ws:
+            #     continue
+            await conn.send_text(payload)
 
-@app.websocket("/ws/{username}")
-async def websocket_endpoint(websocket: WebSocket, username: str):
+@app.websocket("/ws/{username}/{room_id}")
+async def websocket_endpoint(websocket: WebSocket, username: str, room_id: str):
     username = username.strip()
-
-    # Prevent duplicate usernames
-    if username in active_connections.values():
-        await websocket.close(code=4000)
-        return
-
     await websocket.accept()
-    active_connections[websocket] = username
+
+    # Add to room (set prevents duplicates)
+    if room_id not in chat_rooms:
+        chat_rooms[room_id] = set()
+    chat_rooms[room_id].add(websocket)
 
     try:
         while True:
             data = await websocket.receive_text()
-            await broadcast(f"{username}: {data}")
+            await broadcast(room_id, websocket, username, data)
     except WebSocketDisconnect:
-        # Clean up username when the socket closes
-        active_connections.pop(websocket, None)
+        chat_rooms[room_id].discard(websocket)
+        if len(chat_rooms[room_id]) == 0:
+            del chat_rooms[room_id]
