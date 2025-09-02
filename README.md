@@ -51,7 +51,7 @@ Using --host 0.0.0.0 allows any device on your network to connect using your mac
 
 ## Preview | How It Works | Usage Guide
 
-### 1️⃣ Log In
+### 1. Log In
 - Open the app at [http://localhost:3000](http://localhost:3000). 
 > Alternatively, if the backend is running with `--host 0.0.0.0`, you can open the app on any device on your local network (like your mobile phone) using your computer's IP address as the host.
 - Enter a **unique display name** to identify yourself in chat rooms.  
@@ -61,7 +61,7 @@ Using --host 0.0.0.0 allows any device on your network to connect using your mac
 
 ---
 
-### 2️⃣ Create a Chat Room
+### 2. Create a Chat Room
 - Click the **“+”** button in the chat room list.  
 - Your new room will appear in the list of chat rooms.  
 
@@ -69,7 +69,7 @@ Using --host 0.0.0.0 allows any device on your network to connect using your mac
 
 ---
 
-### 3️⃣ Join a Chat Room
+### 3. Join a Chat Room
 - Click on any chat room in the list to join.  
 - Once inside, you will see all messages in that room.  
 - Messages from other users will appear in real-time if chat room exists.  
@@ -77,10 +77,3 @@ Using --host 0.0.0.0 allows any device on your network to connect using your mac
 ![Team Chat Messages](docs/messages-with-team.png)
 
 ---
-
-### 4️⃣ Send Messages
-- Type your message in the **input box** at the bottom.  
-- Press **Enter** or click **Send** button to post it.  
-- Your message will appear immediately with your display name on top.  
-
-![Team Chat Messages](docs/messages-with-team.png)
