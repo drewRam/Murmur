@@ -1,6 +1,6 @@
 # Realtime Chat App
 
-A real-time chat application built with.
+A real-time chat application.
 
 ## Features
 
